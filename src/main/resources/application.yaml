@@ -1,1 +1,22 @@
-spring.application.name=asistente-soc
+spring:
+  application:
+    name: asistente-soc
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/asistente_soc_db
+    username: postgres
+    password: root
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
