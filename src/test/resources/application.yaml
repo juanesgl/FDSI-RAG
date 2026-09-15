@@ -8,3 +8,10 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
+  # H2 no soporta pgvector ni tenemos API key en CI: se excluye el autoconfigure de IA
+  # para que @SpringBootTest (contextLoads) siga pasando sin infraestructura real.
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
+      - org.springframework.ai.model.openai.autoconfigure.OpenAiEmbeddingAutoConfiguration
+      - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration

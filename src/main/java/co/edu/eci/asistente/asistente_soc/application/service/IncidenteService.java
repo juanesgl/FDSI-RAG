@@ -5,7 +5,9 @@ import co.edu.eci.asistente.asistente_soc.domain.model.Incidente;
 import co.edu.eci.asistente.asistente_soc.domain.ports.in.ClasificarIncidenteUseCase;
 import co.edu.eci.asistente.asistente_soc.domain.ports.out.AsistenteIaPort;
 import co.edu.eci.asistente.asistente_soc.domain.ports.out.IncidenteRepositoryPort;
+import org.springframework.stereotype.Service;
 
+@Service
 public class IncidenteService implements ClasificarIncidenteUseCase {
 
     private final IncidenteRepositoryPort repositoryPort;
