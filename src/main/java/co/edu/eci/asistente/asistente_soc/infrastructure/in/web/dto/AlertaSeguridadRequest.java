@@ -1,38 +1,84 @@
 package co.edu.eci.asistente.asistente_soc.infrastructure.in.web.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.util.Map;
 
-@Schema(description = "Alerta de seguridad cruda, tal como la reportaria un sistema de deteccion "
-        + "(p. ej. Wazuh) o el simulador de alertas del equipo.")
+@Schema(description = "Alerta de seguridad cruda con estructura compatible con el contrato de alertas simuladas.")
 public record AlertaSeguridadRequest(
 
-        @Schema(description = "Fecha y hora en que se detecto el evento. Si no se envia, se usa la hora "
-                + "de recepcion del servidor.", example = "2026-09-15T08:30:00")
-        LocalDateTime fechaDeteccion,
+        @Schema(
+                description = "Identificador de la alerta.",
+                example = "esc-01-alert-001"
+        )
+        String id,
 
-        @NotBlank(message = "La descripcion de la alerta es obligatoria")
-        @Schema(description = "Descripcion del evento generado por la regla de deteccion.",
-                example = "Multiples intentos fallidos de autenticacion SSH")
-        String descripcion,
+        @Schema(
+                description = "Fecha y hora del evento en formato ISO-8601 con offset.",
+                example = "2026-09-14T08:30:00-05:00"
+        )
+        OffsetDateTime timestamp,
 
-        @NotBlank(message = "El sistema o agente afectado es obligatorio")
-        @Schema(description = "Nombre del sistema, host o agente donde se origino la alerta.",
-                example = "srv-web-01")
-        String sistemaAfectado,
+        @Schema(description = "Regla que genero la alerta.")
+        Rule rule,
 
-        @Schema(description = "Usuario involucrado en el evento, si aplica.", example = "jvalderrama")
-        String usuarioAfectado,
+        @Schema(description = "Agente que genero la alerta, si aplica.")
+        Agent agent,
 
-        @Schema(description = "Direccion IP de origen del evento, si aplica.", example = "192.168.10.55")
-        String ipOrigen,
+        @Schema(
+                description = "Datos observados por la regla. Debe contener valores simples."
+        )
+        Map<String, Object> data,
 
-        @NotBlank(message = "El impacto estimado es obligatorio")
-        @Schema(description = "Impacto estimado inicial reportado por la fuente de la alerta.",
-                example = "alto")
-        String impactoEstimado
+        @Schema(
+                description = "Registro original de la alerta.",
+                example = "Multiple failed SSH authentication attempts"
+        )
+        String full_log,
+
+        @Schema(
+                description = "Origen o ubicacion de la alerta.",
+                example = "auth"
+        )
+        String location
 
 ) {
+
+        public record Rule(
+
+                @Schema(example = "5710")
+                String id,
+
+                @Schema(example = "Multiple failed SSH authentication attempts")
+                String description,
+
+                @Schema(
+                        description = "Nivel de la regla entre 0 y 15.",
+                        minimum = "0",
+                        maximum = "15",
+                        example = "10"
+                )
+                Integer level,
+
+                java.util.List<String> groups,
+
+                java.util.List<String> mitre,
+
+                Integer firedtimes
+        ) {
+        }
+
+        public record Agent(
+
+                @Schema(example = "001")
+                String id,
+
+                @Schema(example = "srv-web-01")
+                String name,
+
+                @Schema(example = "192.168.10.20")
+                String ip
+        ) {
+        }
 }
