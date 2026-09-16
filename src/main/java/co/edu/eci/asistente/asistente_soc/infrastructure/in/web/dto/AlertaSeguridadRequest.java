@@ -63,10 +63,17 @@ public record AlertaSeguridadRequest(
 
                 java.util.List<String> groups,
 
-                java.util.List<String> mitre,
+                Mitre mitre,
 
                 Integer firedtimes
         ) {
+                public record Mitre(
+
+                        java.util.List<String> id,
+
+                        java.util.List<String> technique
+                ) {
+                }
         }
 
         public record Agent(

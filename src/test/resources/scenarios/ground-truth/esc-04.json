@@ -1,0 +1,16 @@
+{
+  "scenario_id": "ESC-04",
+  "expected_type": "INFORMACION_INSUFICIENTE",
+  "expected_severity": "BAJA",
+  "expected_priority": "P4",
+  "information_sufficient": false,
+  "expected_follow_up": {
+    "required": true,
+    "questions": [
+      "¿Qué sistema o equipo está afectado?",
+      "¿Quién es el usuario o reportante?",
+      "¿Qué síntomas o actividad se están observando?"
+    ]
+  },
+  "severity_metric_excluded": true
+}

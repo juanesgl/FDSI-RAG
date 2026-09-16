@@ -1,0 +1,11 @@
+{
+  "id": "1791474011.4002",
+  "timestamp": "2026-09-14T10:40:11-05:00",
+  "rule": {
+    "id": "100410",
+    "level": 3,
+    "description": "Reporte manual recibido por mesa de ayuda sin categorizar"
+  },
+  "full_log": "Ticket HD-2291 (llamada sin identificar): 'algo raro está pasando con el computador desde esta mañana, no sé qué es'",
+  "location": "mesa-de-ayuda"
+}

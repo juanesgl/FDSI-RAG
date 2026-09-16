@@ -1,0 +1,7 @@
+{
+  "scenario_id": "ESC-02",
+  "expected_type": "ACCESO_NO_AUTORIZADO",
+  "expected_severity": "ALTA",
+  "expected_priority": "P2",
+  "information_sufficient": true
+}
