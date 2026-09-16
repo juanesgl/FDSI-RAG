@@ -1,0 +1,35 @@
+{
+  "id": "1791473290.3107",
+  "timestamp": "2026-09-14T10:28:10-05:00",
+  "rule": {
+    "id": "100310",
+    "level": 12,
+    "description": "EDR: ejecutable con firma maliciosa ejecutado y conexión saliente posterior",
+    "groups": [
+      "edr",
+      "virus"
+    ]
+  },
+  "agent": {
+    "id": "027",
+    "name": "PC-CONT-014",
+    "ip": "10.10.20.14"
+  },
+  "data": {
+    "dstuser": "lgomez",
+    "archivo_ruta": "C:\\Users\\lgomez\\Downloads\\factura_septiembre.exe",
+    "sha256": "9ef5dd52f49172114172b91db3a44921fb4440757172d3d053f41b2ab4a48284",
+    "nombre_deteccion": "Trojan.Win32.Agent.fdsi",
+    "proceso_ejecutado": true,
+    "contenido_por_edr": false,
+    "dstip": "198.51.100.23",
+    "dominio_destino": "update-cdn-sync.example",
+    "dstport": 443,
+    "destino_en_lista_de_amenazas": true,
+    "cifrado_masivo_detectado": false,
+    "equipos_adicionales_afectados": 0,
+    "impacto_reportado": "El usuario nota lentitud en su equipo desde que abrió la factura"
+  },
+  "full_log": "EDR detection: file=factura_septiembre.exe sha256=9ef5dd52f49172114172b91db3a44921fb4440757172d3d053f41b2ab4a48284 action=allowed process_started=true outbound=198.51.100.23:443 (update-cdn-sync.example)",
+  "location": "edr"
+}

@@ -1,0 +1,7 @@
+{
+  "scenario_id": "ESC-01",
+  "expected_type": "PHISHING",
+  "expected_severity": "ALTA",
+  "expected_priority": "P2",
+  "information_sufficient": true
+}

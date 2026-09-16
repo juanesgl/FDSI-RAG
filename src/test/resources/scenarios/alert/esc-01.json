@@ -1,0 +1,30 @@
+{
+  "id": "1791468862.1001",
+  "timestamp": "2026-09-14T09:14:22-05:00",
+  "rule": {
+    "id": "100110",
+    "level": 10,
+    "description": "Correo reportado por un usuario como sospechoso mediante el botón de reporte",
+    "groups": [
+      "email",
+      "user_report"
+    ]
+  },
+  "agent": {
+    "id": "011",
+    "name": "srv-correo-01",
+    "ip": "10.10.1.25"
+  },
+  "data": {
+    "dstuser": "mperez",
+    "remitente": "rrhh-nomina@empresa-pagos.example",
+    "asunto": "Actualización obligatoria de datos de nómina antes de hoy",
+    "url": "http://portal-nomina-actualizacion.example/login",
+    "destinatarios": 3,
+    "reenviado_internamente": false,
+    "accion_usuario": "hizo clic en el enlace e ingresó su usuario y contraseña en la página abierta",
+    "impacto_reportado": "La usuaria teme haber entregado sus credenciales corporativas"
+  },
+  "full_log": "mail-gw: user_report from=rrhh-nomina@empresa-pagos.example to=mperez@empresa.example subject=\"Actualización obligatoria de datos de nómina antes de hoy\" links=1 attachments=0",
+  "location": "mail-gateway"
+}

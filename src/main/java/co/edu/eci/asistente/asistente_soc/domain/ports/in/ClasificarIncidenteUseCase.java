@@ -4,7 +4,5 @@ import co.edu.eci.asistente.asistente_soc.domain.model.Incidente;
 
 public interface ClasificarIncidenteUseCase {
     Incidente procesarNuevoIncidente(Incidente incidenteCrudo);
-    Incidente RegistrarDecisionHumana(String incidenteId, boolean aprobado);
-
     Incidente registrarDecisionHumana(String incidenteId, boolean aprobado);
 }

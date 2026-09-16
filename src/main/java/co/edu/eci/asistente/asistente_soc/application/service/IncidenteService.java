@@ -30,11 +30,6 @@ public class IncidenteService implements ClasificarIncidenteUseCase {
     }
 
     @Override
-    public Incidente RegistrarDecisionHumana(String incidenteId, boolean aprobado) {
-        return null;
-    }
-
-    @Override
     public Incidente registrarDecisionHumana(String incidenteId, boolean aprobado) {
         Incidente incidente = repositoryPort.buscarPorId(incidenteId)
                 .orElseThrow(() -> new IllegalArgumentException("Incidente no encontrado en BD"));

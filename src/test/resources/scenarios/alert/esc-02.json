@@ -1,0 +1,38 @@
+{
+  "id": "1791470513.2044",
+  "timestamp": "2026-09-14T09:41:53-05:00",
+  "rule": {
+    "id": "100210",
+    "level": 10,
+    "description": "Múltiples fallos de autenticación SSH contra la misma cuenta en un periodo corto",
+    "groups": [
+      "authentication_failures",
+      "sshd"
+    ],
+    "mitre": {
+      "id": [
+        "T1110"
+      ],
+      "technique": [
+        "Brute Force"
+      ]
+    },
+    "firedtimes": 35
+  },
+  "agent": {
+    "id": "004",
+    "name": "srv-bastion-01",
+    "ip": "10.10.5.20"
+  },
+  "data": {
+    "srcip": "203.0.113.45",
+    "dstuser": "admin.infra",
+    "tipo_cuenta": "administrativa",
+    "protocolo": "SSH",
+    "intentos_fallidos": 35,
+    "ventana_minutos": 10,
+    "inicio_sesion_exitoso": false
+  },
+  "full_log": "Sep 14 09:41:53 srv-bastion-01 sshd[2211]: Failed password for admin.infra from 203.0.113.45 port 51522 ssh2",
+  "location": "/var/log/secure"
+}
