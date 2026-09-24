@@ -4,7 +4,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * H2 (usado en test/resources/application.yaml) no soporta pgvector, y no queremos que el
@@ -13,13 +19,25 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
  * (AsistenteIaAdapter, ManualIngestionRunner) necesita para poder inyectarse.
  */
 @SpringBootTest
+@Import(AsistenteSocApplicationTests.MockConfig.class)
 class AsistenteSocApplicationTests {
 
-	@MockitoBean
-	private ChatClient.Builder chatClientBuilder;
+	@TestConfiguration
+	static class MockConfig {
 
-	@MockitoBean
-	private VectorStore vectorStore;
+		@Bean
+		ChatClient.Builder chatClientBuilder() {
+			ChatClient.Builder builder = mock(ChatClient.Builder.class);
+			when(builder.defaultSystem(anyString())).thenReturn(builder);
+			when(builder.build()).thenReturn(mock(ChatClient.class));
+			return builder;
+		}
+
+		@Bean
+		VectorStore vectorStore() {
+			return mock(VectorStore.class);
+		}
+	}
 
 	@Test
 	void contextLoads() {
