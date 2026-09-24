@@ -60,3 +60,9 @@ Thumbs.db
 
 application-local.yml
 application-local.properties
+
+# ==========================================
+# Estado de herramientas del agente (no es codigo del proyecto)
+# ==========================================
+.omo/
+.opencode/
