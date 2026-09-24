@@ -24,10 +24,10 @@ services:
       db:
         condition: service_healthy
     environment:
-      DB_URL: jdbc:postgresql://db:5432/asistente_soc_db
-      DB_USERNAME: postgres
-      DB_PASSWORD: root
-      OPENAI_API_KEY: ${OPENAI_API_KEY:}
+      ASISTENTE_DB_URL: jdbc:postgresql://db:5432/asistente_soc_db
+      ASISTENTE_DB_USERNAME: postgres
+      ASISTENTE_DB_PASSWORD: root
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
     ports:
       - "8080:8080"

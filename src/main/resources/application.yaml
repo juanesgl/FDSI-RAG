@@ -3,9 +3,9 @@ spring:
     name: asistente-soc
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/asistente_soc_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:root}
+    url: ${ASISTENTE_DB_URL:jdbc:postgresql://localhost:5432/asistente_soc_db}
+    username: ${ASISTENTE_DB_USERNAME:postgres}
+    password: ${ASISTENTE_DB_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
 
   jpa:
