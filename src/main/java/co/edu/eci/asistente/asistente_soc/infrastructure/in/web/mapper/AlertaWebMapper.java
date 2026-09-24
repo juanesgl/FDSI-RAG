@@ -27,6 +27,10 @@ public abstract class AlertaWebMapper {
                 .usuario(usuario)
                 .ip(obtenerIp(alerta))
                 .impacto(impacto)
+                .idAlertaOrigen(alerta.id())
+                .timestampOrigen(alerta.timestamp() != null
+                        ? alerta.timestamp().toLocalDateTime()
+                        : null)
                 .tipo(null)
                 .severidad(null)
                 .accionPropuesta(null)

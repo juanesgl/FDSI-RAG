@@ -28,5 +28,13 @@ public class IncidenteEntity {
     @Column(columnDefinition = "TEXT")
     private String accionPropuesta;
 
+    @Column(columnDefinition = "TEXT")
+    private String comandoEjecucion;
+    private String sistemaAfectado;
+    private String ipBloqueada;
+
+    private String idAlertaOrigen;
+    private LocalDateTime timestampOrigen;
+
     private String estado;
 }

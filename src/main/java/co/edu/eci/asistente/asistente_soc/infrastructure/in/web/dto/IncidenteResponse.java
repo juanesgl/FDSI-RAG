@@ -39,6 +39,21 @@ public record IncidenteResponse(
         @Schema(description = "Accion de contencion propuesta por la IA, pendiente de aprobacion humana.")
         String accionPropuesta,
 
+        @Schema(description = "Accion de contencion especifica y ejecutable propuesta por la IA.")
+        String comandoEjecucion,
+
+        @Schema(description = "Sistema o servicio objetivo de la contencion.")
+        String sistemaAfectado,
+
+        @Schema(description = "IP que la contencion propone bloquear, si aplica.")
+        String ipBloqueada,
+
+        @Schema(description = "Id original de la alerta en el SIEM de origen (trazabilidad).")
+        String idAlertaOrigen,
+
+        @Schema(description = "Fecha y hora original del evento en el SIEM (ISO-8601 con offset).")
+        LocalDateTime timestampOrigen,
+
         @Schema(description = "Estado actual del incidente dentro de su ciclo de vida.")
         EstadoIncidente estado
 

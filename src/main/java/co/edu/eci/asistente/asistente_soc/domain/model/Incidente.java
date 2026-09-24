@@ -23,13 +23,29 @@ public class Incidente {
     private String severidad;
     private String accionPropuesta;
 
+    private String comandoEjecucion;
+    private String sistemaAfectado;
+    private String ipBloqueada;
+
+    private String idAlertaOrigen;
+    private LocalDateTime timestampOrigen;
+
     private EstadoIncidente estado;
 
     public void marcarParaAprobacion(String tipo, String severidad, String accion) {
+        marcarParaAprobacion(tipo, severidad, accion, null, null, null);
+    }
+
+    public void marcarParaAprobacion(String tipo, String severidad, String accion,
+                                     String comandoEjecucion, String sistemaAfectado,
+                                     String ipBloqueada) {
 
         this.tipo = tipo;
         this.severidad = severidad;
         this.accionPropuesta = accion;
+        this.comandoEjecucion = comandoEjecucion;
+        this.sistemaAfectado = sistemaAfectado;
+        this.ipBloqueada = ipBloqueada;
         this.estado = EstadoIncidente.ESPERANDO_APROBACION_HUMANA;
 
     }
