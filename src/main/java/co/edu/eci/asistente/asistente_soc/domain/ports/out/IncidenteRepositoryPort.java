@@ -6,6 +6,7 @@ import java.util.Optional;
 
 public interface IncidenteRepositoryPort {
 
-    Incidente guardar(Incidente incidente);
+    Incidente guardarNuevo(Incidente incidente);
+    Incidente actualizar(Incidente incidente);
     Optional<Incidente> buscarPorId(String id);
 }

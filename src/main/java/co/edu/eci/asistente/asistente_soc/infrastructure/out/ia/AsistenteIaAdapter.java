@@ -148,10 +148,17 @@ public class AsistenteIaAdapter implements AsistenteIaPort {
                 respuesta.tipo(),
                 respuesta.severidad(),
                 construirTextoAccion(respuesta),
-                respuesta.comandoEjecucion(),
-                respuesta.sistemaAfectado(),
-                respuesta.ipBloqueada()
+                normalizarNull(respuesta.comandoEjecucion()),
+                normalizarNull(respuesta.sistemaAfectado()),
+                normalizarNull(respuesta.ipBloqueada())
         );
+    }
+
+    private String normalizarNull(String valor) {
+        if (valor == null || valor.isBlank() || "null".equalsIgnoreCase(valor.trim())) {
+            return null;
+        }
+        return valor;
     }
 
     private String construirTextoAccion(RespuestaLlm respuesta) {

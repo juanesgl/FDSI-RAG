@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Adaptador de entrada Machine-to-Machine (Mision 2): recibe alertas directamente desde un
@@ -65,11 +64,11 @@ public class WebhookAlertaController {
         }
 
         Incidente incidente = alertaWebMapper.aDominio(alerta);
-        incidente.setId(UUID.randomUUID().toString());
-        clasificarIncidenteUseCase.procesarNuevoIncidenteAsync(incidente);
+        Incidente incidenteGuardado = clasificarIncidenteUseCase.registrarIncidente(incidente);
+        clasificarIncidenteUseCase.procesarIncidenteAsync(incidenteGuardado);
 
         return ResponseEntity.accepted()
-                .body(Map.of("id", incidente.getId(), "estado", "EN_PROCESAMIENTO"));
+                .body(Map.of("id", incidenteGuardado.getId(), "estado", "EN_PROCESAMIENTO"));
     }
 
     private boolean validarSecret(String secret) {

@@ -18,7 +18,6 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -52,14 +51,17 @@ class WebhookAlertaControllerTest {
     }
 
     @Test
-    void recibirAlertaSiem_deberiaResponder202YDispararTriajeAsync() {
+    void recibirAlertaSiem_deberiaResponder202ConIdYDispararTriajeAsync() {
         when(alertaWebMapper.aDominio(any())).thenReturn(Incidente.builder().build());
+        when(clasificarIncidenteUseCase.registrarIncidente(any()))
+                .thenReturn(Incidente.builder().id("ba3f76f7").build());
 
         ResponseEntity<Map<String, String>> response = controller.recibirAlertaSiem(null, alertaValida);
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertNotNull(response.getBody().get("id"));
-        verify(clasificarIncidenteUseCase).procesarNuevoIncidenteAsync(any());
+        assertEquals("ba3f76f7", response.getBody().get("id"));
+        verify(clasificarIncidenteUseCase).registrarIncidente(any());
+        verify(clasificarIncidenteUseCase).procesarIncidenteAsync(any());
     }
 
     @Test
@@ -69,23 +71,28 @@ class WebhookAlertaControllerTest {
         ResponseEntity<Map<String, String>> response = controller.recibirAlertaSiem("secreto-malo", alertaValida);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        verify(clasificarIncidenteUseCase, never()).procesarNuevoIncidenteAsync(any());
+        verify(clasificarIncidenteUseCase, never()).registrarIncidente(any());
+        verify(clasificarIncidenteUseCase, never()).procesarIncidenteAsync(any());
     }
 
     @Test
     void recibirAlertaSiem_conSecretCorrecto_deberiaResponder202() {
         ReflectionTestUtils.setField(controller, "webhookSecret", "secreto-compartido");
         when(alertaWebMapper.aDominio(any())).thenReturn(Incidente.builder().build());
+        when(clasificarIncidenteUseCase.registrarIncidente(any()))
+                .thenReturn(Incidente.builder().id("ba3f76f7").build());
 
         ResponseEntity<Map<String, String>> response = controller.recibirAlertaSiem("secreto-compartido", alertaValida);
 
         assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        verify(clasificarIncidenteUseCase).procesarNuevoIncidenteAsync(any());
+        verify(clasificarIncidenteUseCase).procesarIncidenteAsync(any());
     }
 
     @Test
     void recibirAlertaSiem_sinSecretConfigurado_deberiaAceptar() {
         when(alertaWebMapper.aDominio(any())).thenReturn(Incidente.builder().build());
+        when(clasificarIncidenteUseCase.registrarIncidente(any()))
+                .thenReturn(Incidente.builder().id("ba3f76f7").build());
 
         ResponseEntity<Map<String, String>> response = controller.recibirAlertaSiem(null, alertaValida);
 

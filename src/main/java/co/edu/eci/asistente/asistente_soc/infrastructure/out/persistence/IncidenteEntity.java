@@ -2,6 +2,7 @@ package co.edu.eci.asistente.asistente_soc.infrastructure.out.persistence;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Entity

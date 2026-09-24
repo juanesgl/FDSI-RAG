@@ -24,24 +24,26 @@ public class IncidenteService implements ClasificarIncidenteUseCase {
     @Override
     @Transactional
     public Incidente procesarNuevoIncidente(Incidente incidenteCrudo) {
-        return procesarNuevoIncidenteInterno(incidenteCrudo);
+        Incidente incidenteGuardado = registrarIncidente(incidenteCrudo);
+        incidenteGuardado.setEstado(EstadoIncidente.EN_TRIAJE_IA);
+        iaPort.analizarYProponerContencion(incidenteGuardado);
+        return repositoryPort.actualizar(incidenteGuardado);
+    }
+
+    @Override
+    @Transactional
+    public Incidente registrarIncidente(Incidente incidenteCrudo) {
+        incidenteCrudo.setEstado(EstadoIncidente.NUEVO);
+        return repositoryPort.guardarNuevo(incidenteCrudo);
     }
 
     @Override
     @Async
     @Transactional
-    public void procesarNuevoIncidenteAsync(Incidente incidenteCrudo) {
-        procesarNuevoIncidenteInterno(incidenteCrudo);
-    }
-
-    private Incidente procesarNuevoIncidenteInterno(Incidente incidenteCrudo) {
-        incidenteCrudo.setEstado(EstadoIncidente.NUEVO);
-
-        Incidente incidenteGuardado = repositoryPort.guardar(incidenteCrudo);
-        incidenteGuardado.setEstado(EstadoIncidente.EN_TRIAJE_IA);
-        iaPort.analizarYProponerContencion(incidenteGuardado);
-
-        return repositoryPort.guardar(incidenteGuardado);
+    public void procesarIncidenteAsync(Incidente incidente) {
+        incidente.setEstado(EstadoIncidente.EN_TRIAJE_IA);
+        iaPort.analizarYProponerContencion(incidente);
+        repositoryPort.actualizar(incidente);
     }
 
     @Override
@@ -55,6 +57,6 @@ public class IncidenteService implements ClasificarIncidenteUseCase {
         } else {
             incidente.setEstado(EstadoIncidente.RECHAZADO);
         }
-        return repositoryPort.guardar(incidente);
+        return repositoryPort.actualizar(incidente);
     }
 }

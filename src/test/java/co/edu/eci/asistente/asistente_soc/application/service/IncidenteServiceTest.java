@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -34,9 +33,39 @@ class IncidenteServiceTest {
     private IncidenteService service;
 
     @Test
+    void registrarIncidente_deberiaGuardarComoNuevo() {
+        Incidente incidente = Incidente.builder().descripcion("Alerta SIEM").build();
+        when(repositoryPort.guardarNuevo(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Incidente resultado = service.registrarIncidente(incidente);
+
+        verify(repositoryPort).guardarNuevo(any());
+        assertEquals(EstadoIncidente.NUEVO, resultado.getEstado());
+    }
+
+    @Test
+    void procesarIncidenteAsync_deberiaTriarYActualizar() {
+        Incidente incidente = Incidente.builder().id("abc").build();
+        when(repositoryPort.actualizar(any())).thenAnswer(inv -> inv.getArgument(0));
+        doAnswer(inv -> {
+            Incidente i = inv.getArgument(0);
+            i.marcarParaAprobacion("ACCESO_NO_AUTORIZADO", "ALTA", "accion", "cmd", "srv", "1.2.3.4");
+            return null;
+        }).when(iaPort).analizarYProponerContencion(any());
+
+        service.procesarIncidenteAsync(incidente);
+
+        verify(iaPort).analizarYProponerContencion(any());
+        verify(repositoryPort).actualizar(any());
+        assertEquals(EstadoIncidente.ESPERANDO_APROBACION_HUMANA, incidente.getEstado());
+        assertEquals("ACCESO_NO_AUTORIZADO", incidente.getTipo());
+    }
+
+    @Test
     void procesarNuevoIncidente_deberiaGuardarTriarYGuardar() {
         Incidente incidente = Incidente.builder().descripcion("Intento de phishing").build();
-        when(repositoryPort.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repositoryPort.guardarNuevo(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repositoryPort.actualizar(any())).thenAnswer(inv -> inv.getArgument(0));
         doAnswer(inv -> {
             Incidente i = inv.getArgument(0);
             i.marcarParaAprobacion("PHISHING", "ALTA", "accion", "cmd", "srv", "1.2.3.4");
@@ -45,7 +74,8 @@ class IncidenteServiceTest {
 
         Incidente resultado = service.procesarNuevoIncidente(incidente);
 
-        verify(repositoryPort, times(2)).guardar(any());
+        verify(repositoryPort).guardarNuevo(any());
+        verify(repositoryPort).actualizar(any());
         verify(iaPort).analizarYProponerContencion(any());
         assertEquals(EstadoIncidente.ESPERANDO_APROBACION_HUMANA, resultado.getEstado());
         assertEquals("PHISHING", resultado.getTipo());
@@ -56,7 +86,8 @@ class IncidenteServiceTest {
     @Test
     void procesarNuevoIncidente_conFalloIa_deberiaDegradarAManual() {
         Incidente incidente = Incidente.builder().descripcion("Alerta").build();
-        when(repositoryPort.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repositoryPort.guardarNuevo(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repositoryPort.actualizar(any())).thenAnswer(inv -> inv.getArgument(0));
         doAnswer(inv -> {
             Incidente i = inv.getArgument(0);
             i.marcarParaAprobacion("OTRO", "MEDIA", "No se pudo contactar al modelo de lenguaje");
@@ -76,7 +107,7 @@ class IncidenteServiceTest {
                 .estado(EstadoIncidente.ESPERANDO_APROBACION_HUMANA)
                 .build();
         when(repositoryPort.buscarPorId("abc")).thenReturn(Optional.of(incidente));
-        when(repositoryPort.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repositoryPort.actualizar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Incidente resultado = service.registrarDecisionHumana("abc", true);
 
@@ -90,7 +121,7 @@ class IncidenteServiceTest {
                 .estado(EstadoIncidente.ESPERANDO_APROBACION_HUMANA)
                 .build();
         when(repositoryPort.buscarPorId("abc")).thenReturn(Optional.of(incidente));
-        when(repositoryPort.guardar(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(repositoryPort.actualizar(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Incidente resultado = service.registrarDecisionHumana("abc", false);
 

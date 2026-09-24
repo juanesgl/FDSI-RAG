@@ -19,7 +19,14 @@ public class IncidentePersistenceAdapter implements IncidenteRepositoryPort {
     }
 
     @Override
-    public Incidente guardar(Incidente incidente) {
+    public Incidente guardarNuevo(Incidente incidente) {
+        IncidenteEntity entity = mapper.toEntity(incidente);
+        IncidenteEntity savedEntity = jpaRepository.save(entity);
+        return mapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Incidente actualizar(Incidente incidente) {
         IncidenteEntity entity = mapper.toEntity(incidente);
         IncidenteEntity savedEntity = jpaRepository.save(entity);
         return mapper.toDomain(savedEntity);
