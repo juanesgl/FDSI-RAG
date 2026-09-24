@@ -2,7 +2,6 @@ package co.edu.eci.asistente.asistente_soc.infrastructure.out.ia;
 
 import co.edu.eci.asistente.asistente_soc.domain.model.Incidente;
 import co.edu.eci.asistente.asistente_soc.domain.ports.out.AsistenteIaPort;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -32,14 +31,24 @@ public class AsistenteIaAdapter implements AsistenteIaPort {
             observada), responde con informacionInsuficiente=true y una preguntaSeguimiento
             concreta, dejando tipo="INFORMACION_INSUFICIENTE".
 
+            Las acciones de contencion NO deben ser genericas (p. ej. "bloquear IP"): deben
+            ser comandos ejecutables u operaciones especificas aplicables a una arquitectura
+            orientada a servicios. Para cada accion indica el comando concreto, el sistema o
+            servicio objetivo y el parametro exacto (IP, usuario, host, puerto).
+
             Responde EXCLUSIVAMENTE con un JSON valido, sin texto adicional, con esta forma:
             {
               "tipo": "PHISHING|ACCESO_NO_AUTORIZADO|MALWARE|FUGA_DE_INFORMACION|DENEGACION_DE_SERVICIO|INFORMACION_INSUFICIENTE|OTRO",
               "severidad": "BAJA|MEDIA|ALTA|CRITICA",
               "justificacion": "string",
-              "accionesRecomendadas": ["string"],
-              "informacionInsuficiente": true|false,
-              "preguntaSeguimiento": "string o null"
+              "accionesRecomendadas": [
+                {"accion": "BLOQUEAR_IP", "objetivo": "203.0.113.9", "comando": "iptables -A INPUT -s 203.0.113.9 -j DROP"}
+              ],
+              "comandoEjecucion": "comando principal ejecutable o null",
+              "sistemaAfectado": "sistema o servicio objetivo o null",
+              "ipBloqueada": "IP a bloquear o null",
+              "informacionInsuficiente": false,
+              "preguntaSeguimiento": null
             }
             """;
 
@@ -57,7 +66,6 @@ public class AsistenteIaAdapter implements AsistenteIaPort {
 
     private final ChatClient chatClient;
     private final VectorStore vectorStore;
-    private final ObjectMapper objectMapper;
 
     @Value("${rag.top-k:4}")
     private int topK;
@@ -65,7 +73,6 @@ public class AsistenteIaAdapter implements AsistenteIaPort {
     public AsistenteIaAdapter(ChatClient.Builder chatClientBuilder, VectorStore vectorStore) {
         this.chatClient = chatClientBuilder.defaultSystem(SYSTEM_PROMPT).build();
         this.vectorStore = vectorStore;
-        this.objectMapper = new ObjectMapper();
     }
 
     @Override
@@ -82,9 +89,11 @@ public class AsistenteIaAdapter implements AsistenteIaPort {
                 contexto
         );
 
-        String rawJson;
+        RespuestaLlm respuesta;
         try {
-            rawJson = chatClient.prompt().user(userPrompt).call().content();
+            // Structured Outputs: Spring AI genera el JSON schema desde RespuestaLlm y
+            // obliga al modelo a devolver exactamente esa forma (sin parseo manual).
+            respuesta = chatClient.prompt().user(userPrompt).call().entity(RespuestaLlm.class);
         } catch (Exception e) {
             log.error("Fallo la llamada al LLM para el incidente {}", incidente.getId(), e);
             incidente.marcarParaAprobacion(
@@ -95,7 +104,7 @@ public class AsistenteIaAdapter implements AsistenteIaPort {
             return;
         }
 
-        aplicarRespuestaDelModelo(incidente, rawJson);
+        aplicarRespuestaDelModelo(incidente, respuesta);
     }
 
     private List<Document> buscarProcedimientosRelevantes(String descripcion) {
@@ -117,57 +126,59 @@ public class AsistenteIaAdapter implements AsistenteIaPort {
                 .collect(Collectors.joining("\n"));
     }
 
-    private void aplicarRespuestaDelModelo(Incidente incidente, String rawJson) {
-        try {
-            RespuestaLlm respuesta = objectMapper.readValue(rawJson, RespuestaLlm.class);
-
-            if (Boolean.TRUE.equals(respuesta.informacionInsuficiente())) {
-                incidente.marcarParaAprobacion(
-                        "INFORMACION_INSUFICIENTE",
-                        "BAJA",
-                        "Se requiere mas informacion: " + respuesta.preguntaSeguimiento()
-                );
-                return;
-            }
-
-            String accionPropuesta = construirTextoAccion(respuesta);
-            incidente.marcarParaAprobacion(respuesta.tipo(), respuesta.severidad(), accionPropuesta);
-        } catch (Exception e) {
-            log.error("Respuesta del LLM no tuvo el formato JSON esperado para el incidente {}: {}",
-                    incidente.getId(), rawJson, e);
-            // No inventamos una clasificacion no confiable: se deja explicito para revision humana.
+    private void aplicarRespuestaDelModelo(Incidente incidente, RespuestaLlm respuesta) {
+        if (respuesta == null) {
             incidente.marcarParaAprobacion(
                     "OTRO", "MEDIA",
-                    "La respuesta del modelo no se pudo interpretar de forma confiable. Revisar manualmente."
+                    "El modelo no devolvio una respuesta interpretable. Revisar manualmente."
             );
+            return;
         }
+
+        if (Boolean.TRUE.equals(respuesta.informacionInsuficiente())) {
+            incidente.marcarParaAprobacion(
+                    "INFORMACION_INSUFICIENTE",
+                    "BAJA",
+                    "Se requiere mas informacion: " + respuesta.preguntaSeguimiento()
+            );
+            return;
+        }
+
+        incidente.marcarParaAprobacion(
+                respuesta.tipo(),
+                respuesta.severidad(),
+                construirTextoAccion(respuesta),
+                respuesta.comandoEjecucion(),
+                respuesta.sistemaAfectado(),
+                respuesta.ipBloqueada()
+        );
     }
 
     private String construirTextoAccion(RespuestaLlm respuesta) {
         StringBuilder sb = new StringBuilder();
         sb.append(respuesta.justificacion()).append("\n\nAcciones recomendadas:\n");
-        List<String> acciones = respuesta.accionesRecomendadas();
+        List<RespuestaLlm.AccionContencion> acciones = respuesta.accionesRecomendadas();
         if (acciones == null || acciones.isEmpty()) {
             sb.append("- (el modelo no propuso acciones concretas, revisar manualmente)");
         } else {
-            for (String accion : acciones) {
-                sb.append("- ").append(accion).append("\n");
+            for (RespuestaLlm.AccionContencion accion : acciones) {
+                sb.append("- [").append(accion.accion()).append("]");
+                if (accion.objetivo() != null && !accion.objetivo().isBlank()) {
+                    sb.append(" ").append(accion.objetivo());
+                }
+                if (accion.comando() != null && !accion.comando().isBlank()) {
+                    sb.append(" -> ").append(accion.comando());
+                }
+                sb.append("\n");
             }
+        }
+        if (respuesta.comandoEjecucion() != null && !respuesta.comandoEjecucion().isBlank()) {
+            sb.append("\nComando principal: ").append(respuesta.comandoEjecucion()).append("\n");
         }
         return sb.toString().trim();
     }
 
     private String nullSafe(String value) {
         return (value == null || value.isBlank()) ? "no especificado" : value;
-    }
-
-    private record RespuestaLlm(
-            String tipo,
-            String severidad,
-            String justificacion,
-            List<String> accionesRecomendadas,
-            Boolean informacionInsuficiente,
-            String preguntaSeguimiento
-    ) {
     }
 }
