@@ -11,6 +11,26 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:Z
       - postgres_soc_storage:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d asistente_soc_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: asistente-soc-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/asistente_soc_db
+      DB_USERNAME: postgres
+      DB_PASSWORD: root
+      OPENAI_API_KEY: ${OPENAI_API_KEY:}
+      WEBHOOK_SECRET: ${WEBHOOK_SECRET:-}
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres_soc_storage:

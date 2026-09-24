@@ -1,5 +1,6 @@
 package co.edu.eci.asistente.asistente_soc.infrastructure.in.web.exception;
 
+import co.edu.eci.asistente.asistente_soc.domain.exception.IncidenteNoEncontradoException;
 import co.edu.eci.asistente.asistente_soc.infrastructure.in.web.dto.ApiError;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +25,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiError> manejarNoEncontrado(IllegalArgumentException ex) {
+    @ExceptionHandler(IncidenteNoEncontradoException.class)
+    public ResponseEntity<ApiError> manejarNoEncontrado(IncidenteNoEncontradoException ex) {
         ApiError error = new ApiError(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
                 ex.getMessage(), List.of());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> manejarArgumentoInvalido(IllegalArgumentException ex) {
+        ApiError error = new ApiError(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(), List.of());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 }

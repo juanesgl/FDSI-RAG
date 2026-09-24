@@ -33,13 +33,25 @@ public class ManualIngestionRunner implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
-        Integer existentes = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM vector_store", Integer.class);
-        if (existentes != null && existentes > 0) {
-            log.info("El vector store ya tiene {} fragmentos ingeridos, se omite la ingesta de manuales.", existentes);
-            return;
+    public void run(String... args) {
+        try {
+            Integer existentes = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM vector_store", Integer.class);
+            if (existentes != null && existentes > 0) {
+                log.info("El vector store ya tiene {} fragmentos ingeridos, se omite la ingesta de manuales.", existentes);
+                return;
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo consultar el vector store ({}). Se intenta la ingesta de manuales.", e.getMessage());
         }
 
+        try {
+            ingestarManuales();
+        } catch (Exception e) {
+            log.error("Fallo la ingesta de manuales al vector store. El RAG respondera sin contexto.", e);
+        }
+    }
+
+    private void ingestarManuales() throws Exception {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         Resource[] resources = resolver.getResources(manualsLocation);
 

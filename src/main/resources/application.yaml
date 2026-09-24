@@ -3,9 +3,9 @@ spring:
     name: asistente-soc
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/asistente_soc_db
-    username: postgres
-    password: root
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/asistente_soc_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -43,3 +43,8 @@ springdoc:
 rag:
   manuals-location: classpath:manuals/*.md
   top-k: 4
+
+# Secret opcional para el webhook SIEM (Mision 2). Si esta vacio, el webhook acepta
+# cualquier alerta (modo simulacion); si se define, exige el header X-Webhook-Secret.
+webhook:
+  secret: ${WEBHOOK_SECRET:}
