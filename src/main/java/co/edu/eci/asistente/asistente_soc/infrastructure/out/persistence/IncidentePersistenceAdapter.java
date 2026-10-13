@@ -3,8 +3,10 @@ package co.edu.eci.asistente.asistente_soc.infrastructure.out.persistence;
 import co.edu.eci.asistente.asistente_soc.domain.model.Incidente;
 import co.edu.eci.asistente.asistente_soc.domain.ports.out.IncidenteRepositoryPort;
 import co.edu.eci.asistente.asistente_soc.infrastructure.out.persistence.mapper.IncidenteMapper;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -28,5 +30,13 @@ public class IncidentePersistenceAdapter implements IncidenteRepositoryPort {
     @Override
     public Optional<Incidente> buscarPorId(String id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Incidente> listarTodos() {
+        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, "fechaRecepcion"))
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }
