@@ -93,6 +93,31 @@ def construir_payload(alerta):
     # copia de data: la vamos a enriquecer con lo que Wazuh ya sabe pero que el
     # contrato no transportaba (el conteo de intentos, el protocolo, MITRE...).
     datos = dict(alerta.get("data", {}) or {})
+    full_log = alerta.get("full_log")
+
+    # --- VirusTotal: aplanar el veredicto ----------------------------------
+    # El resultado de VirusTotal llega anidado (data.virustotal={...}) y eso
+    # confunde al modelo: lo mandaba a INFORMACION_INSUFICIENTE pese a decir
+    # "66 engines detected". Lo aplanamos a campos claros y armamos un full_log
+    # explicito. Todo son datos reales de VirusTotal, no se inventa nada.
+    if "virustotal" in (regla.get("groups") or []):
+        vt = datos.get("virustotal") or {}
+        src = vt.get("source") or {}
+        archivo = src.get("file")
+        positivos = vt.get("positives")
+        total = vt.get("total")
+        datos = {k: v for k, v in {
+            "veredicto": "archivo malicioso (malware) confirmado por VirusTotal",
+            "archivo_afectado": archivo,
+            "motores_antivirus_que_lo_detectaron": positivos,
+            "total_motores_analizados": total,
+            "md5": src.get("md5"),
+            "sha1": src.get("sha1"),
+        }.items() if v is not None}
+        if not full_log:
+            full_log = (f"VirusTotal analizo el archivo {archivo} y lo marco como "
+                        f"MALICIOSO: {positivos} de {total} motores antivirus lo "
+                        f"detectaron como malware.")
 
     # --- Enriquecimiento HONESTO -------------------------------------------
     # El modelo clasifica mal cuando no ve la MAGNITUD del ataque. Wazuh si la
@@ -120,7 +145,7 @@ def construir_payload(alerta):
             "description": regla.get("description"),
             "groups": regla.get("groups"),
         },
-        "full_log": alerta.get("full_log"),
+        "full_log": full_log,
         "location": alerta.get("location"),
         # data debe ir siempre (aunque sea {}): el contrato lo marca presente
         "data": datos,
