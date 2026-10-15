@@ -1,0 +1,6 @@
+#!/bin/sh
+# Wrapper que wazuh-integratord ejecuta (debe llamarse igual que el <name>
+# del bloque <integration>, sin extension). Solo invoca al script Python
+# que tiene la logica, pasandole los mismos argumentos.
+DIR_NAME="$(cd "$(dirname "$0")" && pwd)"
+exec /usr/bin/env python3 "${DIR_NAME}/custom-fdsi.py" "$@"

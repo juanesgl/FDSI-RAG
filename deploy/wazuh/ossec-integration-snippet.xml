@@ -1,0 +1,19 @@
+<!-- ============================================================
+     Integracion FDSI-RAG: envia la alerta de fuerza bruta SSH al backend.
+     Pegar este bloque DENTRO de <ossec_config> en
+     /var/ossec/etc/ossec.conf (antes de la etiqueta de cierre
+     </ossec_config>), y reiniciar el manager.
+
+     - hook_url: IP del equipo que corre el backend (ajustar si cambia).
+     - rule_id 5712: 'sshd: brute force trying to get access'. Es la alerta
+       que resume multiples intentos en UNO solo, asi un ataque = 1 incidente.
+       Si en esta version no saltara, reemplazar por:
+         <group>authentication_failed</group>
+       (eso envia cada intento individual; mas ruidoso pero garantizado).
+     ============================================================ -->
+<integration>
+  <name>custom-fdsi</name>
+  <hook_url>http://192.168.2.20:8080/api/v1/alertas</hook_url>
+  <rule_id>5712</rule_id>
+  <alert_format>json</alert_format>
+</integration>
